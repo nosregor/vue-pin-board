@@ -1,28 +1,28 @@
 {
   "name": "vue-pin-board",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:nosregor/vue-pin-board.git",
+  "author": "Andrew Rogerson <werdnanosregor@gmail.com>",
+  "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview --port 5050",
-    "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+    "client:install": "cd client && yarn install",
+    "client": "cd client && yarn dev",
+    "server": "node server",
+    "dev": "concurrently --kill-others-on-fail \"yarn run server\" \"yarn run client\"",
+    "start": "node server",
+    "heroku-postbuild": "cd client/ && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   },
   "dependencies": {
-    "vue": "^3.2.29"
+    "connect-history-api-fallback": "^1.6.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "query-string": "^7.1.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.1.0",
-    "@types/node": "^16.11.22",
-    "@vitejs/plugin-vue": "^2.1.0",
-    "@vue/eslint-config-prettier": "^7.0.0",
-    "@vue/eslint-config-typescript": "^10.0.0",
-    "@vue/tsconfig": "^0.1.3",
-    "eslint": "^8.5.0",
-    "eslint-plugin-vue": "^8.2.0",
-    "prettier": "^2.5.1",
-    "typescript": "~4.5.5",
-    "vite": "^2.7.13",
-    "vue-tsc": "^0.31.1"
+    "concurrently": "^7.0.0"
   }
 }
