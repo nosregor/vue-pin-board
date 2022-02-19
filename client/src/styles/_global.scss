@@ -1,0 +1,177 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  margin: 0;
+  font-family: $ff-base;
+  font-size: $fz-base;
+  background-color: $white;
+  color: $black;
+  line-height: 1.5;
+
+  &.fixed {
+    overflow-y: hidden;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+a {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+  text-decoration-skip-ink: auto;
+  transition: $transition;
+  padding: 8px 16px;
+  border-radius: $radius;
+  font-weight: 700;
+}
+
+button {
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  transition: $transition;
+  font-weight: 700;
+}
+
+input,
+textarea {
+  border: 0;
+  outline: 0;
+  margin: 0;
+  padding: 0;
+  font-size: $fz-base;
+  background-color: transparent;
+  &::placeholder {
+    font-family: $ff-base;
+  }
+}
+
+ul,
+ol {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  max-width: 100px;
+}
+
+img {
+  width: 100%;
+  max-width: 100%;
+  vertical-align: middle;
+  border-radius: $radius;
+}
+
+p,
+pre {
+  margin: 0 0 10px;
+  color: $dark-grey;
+}
+
+.container {
+  padding: 50px;
+
+  @include smallerThan480 {
+    padding: 25px;
+  }
+
+  header {
+    margin: 70px 0;
+
+    h1 {
+      font-size: $fz-xl;
+      line-height: 1.2;
+    }
+
+    a {
+      background-color: transparent;
+      color: $black;
+      font-size: $fz-sm;
+      display: flex;
+      align-items: center;
+      width: max-content;
+      border-radius: 30px;
+      padding: 10px 15px;
+
+      &:hover,
+      &:focus {
+        background-color: $grey;
+      }
+
+      svg {
+        max-width: 12px;
+      }
+    }
+  }
+
+  ul.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-gap: 30px;
+    width: 100%;
+
+    li {
+      border: 1px solid $grey;
+      border-radius: $radius;
+
+      a {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        border-radius: $radius;
+
+        &:hover,
+        &:focus {
+          background: $grey;
+        }
+
+        h2 {
+          font-size: $fz-md;
+          line-height: 1.2;
+          margin-bottom: 0;
+        }
+
+        p {
+          margin: 0;
+          font-size: $fz-sm;
+          font-weight: 400;
+        }
+
+        img {
+          border: 1px solid $grey;
+        }
+      }
+    }
+  }
+}
