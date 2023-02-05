@@ -11,9 +11,10 @@ const PORT = process.env.PORT || 8888;
 
 if (process.env.NODE_ENV !== 'production') {
   REDIRECT_URI = `${localhost}/callback`;
-  FRONTEND_URI = 'http://localhost:8080';
+  FRONTEND_URI = 'http://localhost:3000';
 }
 
+const morgan = require('morgan'); 
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
@@ -37,6 +38,7 @@ app.use(history({
   ],
 }));
 app.use(express.static(path.resolve(__dirname, '../client/dist')));
+app.use(morgan("dev"));
 
 if (process.env.NODE_ENV !== 'production') {
   const certOptions = {
@@ -45,6 +47,7 @@ if (process.env.NODE_ENV !== 'production') {
   }
 
   https.createServer(certOptions, app).listen(PORT, function() {
+    console.log(process.env.NODE_ENV)
     if (process.env.NODE_ENV !== 'production') {
       console.log('Server up and running...🏃🏃🏻🏃‍');
       console.log(`Listening on https://localhost:${PORT}/ \n`);
@@ -58,6 +61,11 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 }
+
+app.get('healthz', function (req,res) {
+  res.status(204).send(undefined)
+})
+
 
 app.get('/', function (req, res) {
   res.render((path.resolve(__dirname, '../client/dist/index.html')));
@@ -76,6 +84,7 @@ const stateKey = 'pinterest_auth_state';
 
 // Get authorization code
 app.get('/login', function(req, res) {
+  console.log("LOGIN")
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
@@ -83,45 +92,59 @@ app.get('/login', function(req, res) {
     response_type: 'code',
     client_id: APP_ID,
     state,
-    scope: 'read_public,write_public',
+    scope: 'user_accounts:read,boards:read,pins:read',
     redirect_uri: REDIRECT_URI,
   });
 
-  res.redirect(`https://api.pinterest.com/oauth/?${parameters}`);
+  // res.redirect(`https://api.pinterest.com/oauth/?${parameters}`);
+  res.redirect(`https://www.pinterest.com/oauth/?${parameters}`);
 });
 
-// Get access token
+// Generate OAuth access token
 app.get('/callback', function(req, res) {
+
+
   const code = req.query.code || null;
   const state = req.query.state || null;
   const storedState = req.cookies ? req.cookies[stateKey] : null;
+
+  console.log({code})
+  console.log({state})
+  // console.log({cookies})
 
   if (state === null || state !== storedState) {
     res.redirect(`/#${queryString.stringify({ error: 'state_mismatch' })}`);
   } else {
     res.clearCookie(stateKey);
 
+    const auth = `${process.env.APP_ID}:${process.env.APP_SECRET}`;
+    const b64auth = Buffer.from(auth).toString('base64');
+
+
     const authOptions = {
-      url: 'https://api.pinterest.com/v1/oauth/token',
+      url: 'https://api.pinterest.com/v5/oauth/token',
       form: {
         code: code,
         grant_type: 'authorization_code',
         client_id: APP_ID,
         client_secret: APP_SECRET,
+        redirect_uri: REDIRECT_URI,
       },
       headers: {
-        Authorization: `Basic ${new Buffer(
-          `${process.env.APP_ID}:${process.env.APP_SECRET}`,
-        ).toString('base64')}`,
+        Authorization: `Basic ${b64auth}`,
+        'content-type': 'application/x-www-form-urlencoded'
       },
       json: true,
     };
+
+    console.log(authOptions)
 
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const access_token = body.access_token;
         res.redirect(`${FRONTEND_URI}/#${queryString.stringify({ access_token })}`);
       } else {
+        console.log({response})
         res.redirect(`/#${queryString.stringify({ error: 'invalid_token' })}`);
       }
     });

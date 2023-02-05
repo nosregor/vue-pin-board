@@ -1,16 +1,12 @@
-<!-- <template>
+<template>
   <div>
     <div v-if="token && user" class="container user">
-      <button @click="logoutUser" class="logout">
-        Logout
-      </button>
+      <button @click="logOutUser" class="logout">Logout</button>
 
       <header>
-        <img :src="user.image['60x60'].url" alt="user image">
+        <!-- <img :src="user.image['60x60'].url" alt="user image" /> -->
         <div>
-          <h1>
-            {{ user.first_name }} {{ user.last_name }}
-          </h1>
+          <h1>{{ user.first_name }} {{ user.last_name }}</h1>
           <p>
             <span>{{ user.counts.followers }} Followers &middot;&nbsp;</span>
             <span>{{ user.counts.following }} Following &middot;&nbsp;</span>
@@ -21,13 +17,9 @@
       </header>
       <main>
         <ul class="grid">
-          <li
-            v-for="(board, index) in boards"
-            :key="index"
-            class="board"
-          >
+          <li v-for="(board, index) in boards" :key="index" class="board">
             <router-link :to="{ name: 'board', params: { id: board.id } }">
-              <img :src="board.image['60x60'].url" alt="board image">
+              <!-- <img :src="board.image['60x60'].url" alt="board image" /> -->
               <div class="board__details">
                 <h2>{{ board.name }}</h2>
                 <p>{{ board.counts.pins }} Pins</p>
@@ -42,59 +34,76 @@
   </div>
 </template>
 
-<script>
-import { catchErrors, cache, cached } from '@/utils';
-import { token, getUser, getUserBoards, logout } from '@/pinterest';
-import { Login } from '@/components';
+<script setup lang="ts">
+import { catchErrors, cache, cached } from "@/utils";
+import { token, getUser, getUserBoards, logout } from "@/pinterest/index";
+import { Login } from "@/components";
+import { onMounted, ref } from "vue";
 
-export default {
-  name: 'Boards',
-  components: {
-    Login,
-  },
-  data() {
-    return {
-      token: '',
-      user: null,
-      boards: [],
-    };
-  },
-  created() {
-    this.token = token;
-  },
-  mounted() {
-    // Remove the caching logic once app gets approved
-    const cachedUser = cached('pinterest_user');
-    const cachedBoards = cached('pinterest_boards');
+const pinToken = ref("");
+const user = ref({
+  first_name: "",
+  last_name: "",
+  counts: { followers: "", following: "", boards: "", pins: "" },
+  image: "",
+});
+const boards = ref([]);
+// data() {
+//   return {
+//     token: "",
+//     user: null,
+//     boards: [],
+//   };
+// }
 
-    if (cachedUser && cachedBoards) {
-      this.user = JSON.parse(cachedUser);
-      this.boards = JSON.parse(cachedBoards);
-    } else {
-      console.warn('Getting user data');
+function oncreated() {
+  pinToken.value = token;
+}
 
-      if (this.token) {
-        catchErrors(this.getData());
-      }
+function logOutUser() {
+  logout();
+}
+
+async function getData() {
+  const pinUser = await getUser();
+
+  console.log("PINUSER");
+  console.log(pinUser);
+
+  user.value = pinUser.data.data;
+  // Remove this line once app gets approved
+  cache("pinterest_user", JSON.stringify(user.value));
+
+  const pinBoards = await getUserBoards();
+  console.log("PINBOARDS");
+
+  boards.value = pinBoards.data.data;
+  // Remove this line once app gets approved
+  cache("pinterest_boards", JSON.stringify(boards.value));
+}
+
+onMounted(() => {
+  console.log("ONMOUNTED");
+  // Remove the caching logic once app gets approved
+  const cachedUser = cached("pinterest_user");
+  const cachedBoards = cached("pinterest_boards");
+  console.log(cachedUser);
+  console.log(cachedBoards);
+  console.log(pinToken.value);
+  oncreated();
+  getData();
+
+  if (cachedUser && cachedBoards) {
+    user.value = JSON.parse(cachedUser);
+    boards.value = JSON.parse(cachedBoards);
+  } else {
+    console.warn("Getting user data");
+
+    if (pinToken.value) {
+      catchErrors(getData());
     }
-  },
-  methods: {
-    async getData() {
-      const user = await getUser();
-      this.user = user.data.data;
-      // Remove this line once app gets approved
-      cache('pinterest_user', JSON.stringify(this.user));
-
-      const boards = await getUserBoards();
-      this.boards = boards.data.data;
-      // Remove this line once app gets approved
-      cache('pinterest_boards', JSON.stringify(this.boards));
-    },
-    logoutUser() {
-      logout();
-    },
-  },
-};
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -145,4 +154,4 @@ export default {
     }
   }
 }
-</style> -->
+</style>
